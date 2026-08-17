@@ -71,6 +71,37 @@ lifepath/
 
    Scan the QR code with **Expo Go** (or press `a` for Android / `i` for iOS).
 
+## Building the app (package / APK)
+
+This project is configured for **EAS Build** (Expo's cloud build service). You don't
+need a local Android SDK.
+
+1. Install the EAS CLI and log in with a free Expo account:
+
+   ```bash
+   npm install -g eas-cli
+   eas login
+   ```
+
+2. Build a shareable Android **APK** (installable on any Android phone):
+
+   ```bash
+   npm run build:apk        # or: eas build -p android --profile preview
+   ```
+
+   EAS will give you a link and build on Expo's servers. When it finishes, you can
+   install the APK on a device or download it.
+
+3. Build a Play Store bundle (AAB) or iOS:
+
+   ```bash
+   npm run build:aab        # Google Play .aab
+   npm run build:ios        # requires a paid Apple Developer account
+   ```
+
+The Supabase URL and publishable key are baked into `app.json` (under `extra`), so the
+built app talks to your live backend with no further setup.
+
 ## Trying the full flow
 
 1. Sign up as a **Mentee** (or two accounts: one mentee, one mentor).
