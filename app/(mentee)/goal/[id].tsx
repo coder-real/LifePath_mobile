@@ -58,6 +58,15 @@ export default function GoalDetailScreen() {
     }
   }
 
+  async function setStatus(status: Goal['status']) {
+    if (!goal || status === goal.status) return;
+    const { error } = await supabase
+      .from('goals')
+      .update({ status })
+      .eq('id', goal.id);
+    if (!error) load();
+  }
+
   if (!goal) {
     return (
       <Screen>
@@ -78,6 +87,24 @@ export default function GoalDetailScreen() {
         {goal.description ? <Text style={styles.description}>{goal.description}</Text> : null}
 
         <Card style={{ marginTop: spacing.md }}>
+          <Text style={styles.sectionTitle}>Status</Text>
+          <View style={styles.statusRow}>
+            {(['active', 'paused', 'completed'] as const).map((s) => {
+              const isActive = goal.status === s;
+              return (
+                <View
+                  key={s}
+                  onTouchEnd={() => setStatus(s)}
+                  style={[styles.statusChip, isActive && styles.statusChipActive]}
+                >
+                  <Text style={[styles.statusChipText, isActive && styles.statusChipTextActive]}>
+                    {s.charAt(0).toUpperCase() + s.slice(1)}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+
           <Text style={styles.sectionTitle}>Progress</Text>
           <View style={styles.progressTrack}>
             <View style={[styles.progressFill, { width: `${pct}%` }]} />
@@ -148,6 +175,32 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.text,
     marginVertical: spacing.sm,
+  },
+  statusRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  statusChip: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    paddingVertical: spacing.sm,
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+  },
+  statusChipActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  statusChipText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textMuted,
+  },
+  statusChipTextActive: {
+    color: '#fff',
   },
   progressTrack: {
     height: 8,

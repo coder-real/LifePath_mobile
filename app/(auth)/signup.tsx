@@ -42,8 +42,10 @@ export default function SignUpScreen() {
     }
 
     // Create the profile row (id mirrors auth.users.id).
+    // Use an upsert so it's safe even though a DB trigger also auto-creates
+    // the row on signup — whichever runs first, this never errors.
     if (data.user) {
-      const { error: profileErr } = await supabase.from('profiles').insert({
+      const { error: profileErr } = await supabase.from('profiles').upsert({
         id: data.user.id,
         full_name: fullName,
         role,
@@ -53,7 +55,7 @@ export default function SignUpScreen() {
       if (profileErr) {
         // Non-fatal: profile may already exist if a user signs up with email
         // confirmation flow. Log it but continue.
-        console.warn('Profile insert error:', profileErr.message);
+        console.warn('Profile upsert error:', profileErr.message);
       }
     }
 

@@ -13,26 +13,25 @@ export default function GoalsScreen() {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const load = useCallback(async () => {
+    if (!profile) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    const { data } = await supabase
+      .from('goals')
+      .select('*, milestones:goal_milestones(*)')
+      .eq('user_id', profile.id)
+      .order('created_at', { ascending: false });
+    setGoals((data ?? []) as Goal[]);
+    setLoading(false);
+  }, [profile]);
+
   useFocusEffect(
     useCallback(() => {
-      let active = true;
-      setLoading(true);
-      (async () => {
-        if (!profile) return;
-        const { data } = await supabase
-          .from('goals')
-          .select('*, milestones:goal_milestones(*)')
-          .eq('user_id', profile.id)
-          .order('created_at', { ascending: false });
-        if (active) {
-          setGoals((data ?? []) as Goal[]);
-          setLoading(false);
-        }
-      })();
-      return () => {
-        active = false;
-      };
-    }, [profile])
+      load();
+    }, [load])
   );
 
   return (
@@ -42,7 +41,7 @@ export default function GoalsScreen() {
       <FlatList
         data={goals}
         keyExtractor={(item) => item.id}
-        refreshControl={<RefreshControl refreshing={loading} onRefresh={() => {}} />}
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={load} />}
         contentContainerStyle={{ paddingBottom: spacing.xl }}
         ListEmptyComponent={<EmptyState message="No goals yet. Create your first goal to get started." />}
         renderItem={({ item }) => {
