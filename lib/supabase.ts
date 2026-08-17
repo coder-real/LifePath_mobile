@@ -7,11 +7,14 @@ import Constants from 'expo-constants';
 // Supabase client configured for React Native / Expo.
 // On native we persist the session in SecureStore; on web, AsyncStorage.
 
+// The publishable/anon key can be exposed via EXPO_PUBLIC_SUPABASE_KEY
+// (Supabase's current naming) or EXPO_PUBLIC_SUPABASE_ANON_KEY.
 const supabaseUrl =
   process.env.EXPO_PUBLIC_SUPABASE_URL ??
   Constants.expoConfig?.extra?.supabaseUrl ??
   '';
 const supabaseAnonKey =
+  process.env.EXPO_PUBLIC_SUPABASE_KEY ??
   process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ??
   Constants.expoConfig?.extra?.supabaseAnonKey ??
   '';
