@@ -3,6 +3,7 @@ import {
   FlatList,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   RefreshControl,
   StyleSheet,
   Text,
@@ -114,9 +115,9 @@ function PressableButton({
   loading: boolean;
 }) {
   return (
-    <View onTouchEnd={onPress} style={styles.sendButton}>
+    <Pressable onPress={onPress} style={styles.sendButton}>
       <Text style={styles.sendText}>{loading ? '…' : label}</Text>
-    </View>
+    </Pressable>
   );
 }
 

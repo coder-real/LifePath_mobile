@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { Button, Card, EmptyState, Screen } from '@/components/ui';
+import { Button, Card, EmptyState, Screen, SelectableChip } from '@/components/ui';
 import { colors, radius, spacing } from '@/lib/theme';
 import { supabase } from '@/lib/supabase';
 import { Goal, GoalMilestone } from '@/types';
@@ -92,15 +92,13 @@ export default function GoalDetailScreen() {
             {(['active', 'paused', 'completed'] as const).map((s) => {
               const isActive = goal.status === s;
               return (
-                <View
+                <SelectableChip
                   key={s}
-                  onTouchEnd={() => setStatus(s)}
-                  style={[styles.statusChip, isActive && styles.statusChipActive]}
-                >
-                  <Text style={[styles.statusChipText, isActive && styles.statusChipTextActive]}>
-                    {s.charAt(0).toUpperCase() + s.slice(1)}
-                  </Text>
-                </View>
+                  label={s.charAt(0).toUpperCase() + s.slice(1)}
+                  active={isActive}
+                  onPress={() => setStatus(s)}
+                  style={styles.statusChip}
+                />
               );
             })}
           </View>
@@ -120,9 +118,9 @@ export default function GoalDetailScreen() {
         ) : (
           milestones.map((m) => (
             <View key={m.id} style={styles.milestone}>
-              <View onTouchEnd={() => toggle(m)} style={styles.checkbox}>
+              <Pressable onPress={() => toggle(m)} style={styles.checkbox}>
                 {m.is_completed ? <Text style={styles.check}>{'✓'}</Text> : null}
-              </View>
+              </Pressable>
               <Text style={[styles.milestoneText, m.is_completed && styles.milestoneDone]}>
                 {m.title}
               </Text>
@@ -140,9 +138,9 @@ export default function GoalDetailScreen() {
             style={styles.addInput}
             onSubmitEditing={addMilestone}
           />
-          <View onTouchEnd={addMilestone} style={styles.addBtn}>
+          <Pressable onPress={addMilestone} style={styles.addBtn}>
             <Text style={styles.addBtnText}>{adding ? '…' : 'Add'}</Text>
-          </View>
+          </Pressable>
         </View>
 
         <Button title="Refresh" variant="secondary" onPress={load} style={{ marginTop: spacing.md }} />
@@ -183,24 +181,10 @@ const styles = StyleSheet.create({
   },
   statusChip: {
     flex: 1,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    paddingVertical: spacing.sm,
+    marginRight: spacing.xs,
+    marginBottom: 0,
     alignItems: 'center',
-    backgroundColor: colors.surface,
-  },
-  statusChipActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  statusChipText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.textMuted,
-  },
-  statusChipTextActive: {
-    color: '#fff',
+    paddingVertical: spacing.sm,
   },
   progressTrack: {
     height: 8,

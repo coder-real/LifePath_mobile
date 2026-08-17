@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { Card, EmptyState, Screen, SectionTitle, Tag } from '@/components/ui';
+import { Card, EmptyState, Screen, SectionTitle, SelectableChip, Tag } from '@/components/ui';
 import Avatar from '@/components/Avatar';
 import { colors, radius, spacing } from '@/lib/theme';
 import { supabase } from '@/lib/supabase';
@@ -57,9 +57,9 @@ export default function MentorListScreen() {
         style={styles.search}
       />
       <View style={styles.filterRow}>
-        <CategoryChip label="All" active={category === null} onPress={() => setCategory(null)} />
+        <SelectableChip label="All" active={category === null} onPress={() => setCategory(null)} />
         {availableCategories.map((c) => (
-          <CategoryChip key={c} label={c} active={category === c} onPress={() => setCategory(category === c ? null : c)} />
+          <SelectableChip key={c} label={c} active={category === c} onPress={() => setCategory(category === c ? null : c)} />
         ))}
       </View>
 
@@ -100,25 +100,6 @@ export default function MentorListScreen() {
   );
 }
 
-function CategoryChip({
-  label,
-  active,
-  onPress,
-}: {
-  label: string;
-  active: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <View
-      onTouchEnd={onPress}
-      style={[styles.chip, active && styles.chipActive]}
-    >
-      <Text style={[styles.chipText, active && styles.chipTextActive]}>{label}</Text>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   search: {
     borderWidth: 1,
@@ -134,27 +115,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     marginVertical: spacing.sm,
-    gap: spacing.xs,
-  },
-  chip: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.full,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 6,
-    backgroundColor: colors.surface,
-  },
-  chipActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  chipText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.textMuted,
-  },
-  chipTextActive: {
-    color: '#fff',
   },
   card: {
     paddingVertical: spacing.md,

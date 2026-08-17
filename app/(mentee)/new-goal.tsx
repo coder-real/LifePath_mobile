@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Button, Field, Screen } from '@/components/ui';
+import { Button, Field, Screen, SelectableChip } from '@/components/ui';
 import { useAuth } from '@/context/AuthContext';
 import { colors, radius, spacing } from '@/lib/theme';
 import { supabase } from '@/lib/supabase';
@@ -77,13 +77,7 @@ export default function NewGoalScreen() {
         <Text style={styles.label}>Category</Text>
         <View style={styles.chips}>
           {CATEGORIES.map((c) => (
-            <View
-              key={c}
-              onTouchEnd={() => setCategory(c)}
-              style={[styles.chip, category === c && styles.chipActive]}
-            >
-              <Text style={[styles.chipText, category === c && styles.chipTextActive]}>{c}</Text>
-            </View>
+            <SelectableChip key={c} label={c} active={category === c} onPress={() => setCategory(c)} />
           ))}
         </View>
 
@@ -97,9 +91,9 @@ export default function NewGoalScreen() {
             style={styles.milestoneInput}
             onSubmitEditing={addMilestone}
           />
-          <View onTouchEnd={addMilestone} style={styles.addBtn}>
+          <Pressable onPress={addMilestone} style={styles.addBtn}>
             <Text style={styles.addBtnText}>Add</Text>
-          </View>
+          </Pressable>
         </View>
         {milestones.map((m, i) => (
           <Text key={i} style={styles.milestoneItem}>• {m}</Text>
@@ -122,27 +116,6 @@ const styles = StyleSheet.create({
   chips: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: spacing.xs,
-  },
-  chip: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.full,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 6,
-    backgroundColor: colors.surface,
-  },
-  chipActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  chipText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.textMuted,
-  },
-  chipTextActive: {
-    color: '#fff',
   },
   milestoneRow: {
     flexDirection: 'row',

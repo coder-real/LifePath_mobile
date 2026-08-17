@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { Button, Field, Screen, SectionTitle } from '@/components/ui';
+import { Button, Field, Screen, SectionTitle, SelectableChip } from '@/components/ui';
 import Avatar from '@/components/Avatar';
 import { useAuth } from '@/context/AuthContext';
 import { colors, radius, spacing } from '@/lib/theme';
@@ -149,26 +149,23 @@ export default function MentorProfileScreen() {
         <Text style={styles.label}>Categories</Text>
         <View style={styles.chips}>
           {CATEGORIES.map((c) => (
-            <View
+            <SelectableChip
               key={c}
-              onTouchEnd={() => toggleCategory(c)}
-              style={[styles.chip, categories.includes(c) && styles.chipActive]}
-            >
-              <Text style={[styles.chipText, categories.includes(c) && styles.chipTextActive]}>
-                {c}
-              </Text>
-            </View>
+              label={c}
+              active={categories.includes(c)}
+              onPress={() => toggleCategory(c)}
+            />
           ))}
         </View>
 
-        <View onTouchEnd={() => setIsAvailable((v) => !v)} style={styles.availability}>
+        <Pressable onPress={() => setIsAvailable((v) => !v)} style={styles.availability}>
           <View style={[styles.switch, isAvailable && styles.switchOn]}>
             <View style={[styles.switchKnob, isAvailable && styles.switchKnobOn]} />
           </View>
           <Text style={styles.availabilityText}>
             {isAvailable ? 'Available for new mentees' : 'Not accepting new mentees'}
           </Text>
-        </View>
+        </Pressable>
 
         {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
         <Button title="Save Mentor Profile" onPress={save} loading={saving} style={{ marginTop: spacing.md }} />
@@ -213,27 +210,6 @@ const styles = StyleSheet.create({
   chips: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: spacing.xs,
-  },
-  chip: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.full,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 6,
-    backgroundColor: colors.surface,
-  },
-  chipActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  chipText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.textMuted,
-  },
-  chipTextActive: {
-    color: '#fff',
   },
   availability: {
     flexDirection: 'row',

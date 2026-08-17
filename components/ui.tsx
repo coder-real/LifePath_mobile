@@ -116,6 +116,35 @@ export function Tag({ label }: { label: string }) {
   );
 }
 
+// ---- Selectable chip (works on web + native) ----
+export function SelectableChip({
+  label,
+  active,
+  onPress,
+  style,
+}: {
+  label: string;
+  active: boolean;
+  onPress: () => void;
+  style?: ViewStyle;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.selectableChip,
+        active && styles.selectableChipActive,
+        pressed && styles.pressed,
+        style,
+      ]}
+    >
+      <Text style={[styles.selectableChipText, active && styles.selectableChipTextActive]}>
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
 // ---- Screen container ----
 export function Screen({ children, style }: { children: React.ReactNode; style?: ViewStyle }) {
   return <View style={[styles.screen, style]}>{children}</View>;
@@ -201,5 +230,27 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontSize: 12,
     fontWeight: '600',
+  },
+  selectableChip: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.full,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 6,
+    backgroundColor: colors.surface,
+    marginRight: spacing.xs,
+    marginBottom: spacing.xs,
+  },
+  selectableChipActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  selectableChipText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.textMuted,
+  },
+  selectableChipTextActive: {
+    color: '#fff',
   },
 });
