@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { Button, Field, Screen, SectionTitle } from '@/components/ui';
+import Avatar from '@/components/Avatar';
 import { useAuth } from '@/context/AuthContext';
 import { colors, radius, spacing } from '@/lib/theme';
 import { supabase } from '@/lib/supabase';
+import { profileAvatarUrl, uploadAvatar } from '@/lib/avatar';
 import { CATEGORIES } from '@/types';
 
 export default function MentorProfileScreen() {
@@ -12,6 +15,7 @@ export default function MentorProfileScreen() {
   const [expertise, setExpertise] = useState('');
   const [categories, setCategories] = useState<string[]>([]);
   const [isAvailable, setIsAvailable] = useState(true);
+  const [avatarUri, setAvatarUri] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState('');
 
@@ -38,11 +42,53 @@ export default function MentorProfileScreen() {
     );
   }
 
+  async function pickAvatar() {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) {
+      setFeedback('We need media library permission to upload an avatar.');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+    if (!result.canceled && result.assets[0]) {
+      setAvatarUri(result.assets[0].uri);
+      setFeedback('');
+    }
+  }
+
   async function save() {
     if (!profile) return;
     setSaving(true);
     setFeedback('');
     const expertiseList = expertise.split(',').map((s) => s.trim()).filter(Boolean);
+
+    // Upload avatar first if the user picked a new one.
+    let avatarFileName: string | null = profile.avatar_url;
+    if (avatarUri) {
+      try {
+        const mime = avatarUri.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
+        avatarFileName = await uploadAvatar(profile.id, { uri: avatarUri, mimeType: mime });
+      } catch (e) {
+        setSaving(false);
+        setFeedback('Avatar upload failed: ' + (e instanceof Error ? e.message : String(e)));
+        return;
+      }
+    }
+
+    const { error: profileErr } = await supabase
+      .from('profiles')
+      .update({ avatar_url: avatarFileName })
+      .eq('id', profile.id);
+    if (profileErr) {
+      setSaving(false);
+      setFeedback('Could not save avatar: ' + profileErr.message);
+      return;
+    }
+
     const row = {
       id: profile.id,
       headline: headline.trim() || null,
@@ -65,6 +111,28 @@ export default function MentorProfileScreen() {
     <Screen>
       <ScrollView contentContainerStyle={{ paddingBottom: spacing.xl }}>
         <SectionTitle>Mentor profile</SectionTitle>
+
+        <View style={styles.avatarRow}>
+          <View style={styles.avatarWrap}>
+            {avatarUri ? (
+              <Image source={{ uri: avatarUri }} style={styles.avatarImg} />
+            ) : (
+              <Avatar
+                name={profile?.full_name ?? '?'}
+                userId={profile?.id}
+                avatarFileName={profile?.avatar_url}
+                size={80}
+              />
+            )}
+          </View>
+          <Button
+            title={avatarUri ? 'Change photo' : 'Upload photo'}
+            variant="secondary"
+            onPress={pickAvatar}
+            style={styles.avatarBtn}
+          />
+        </View>
+
         <Field
           label="Headline"
           value={headline}
@@ -114,6 +182,27 @@ export default function MentorProfileScreen() {
 }
 
 const styles = StyleSheet.create({
+  avatarRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    marginBottom: spacing.md,
+  },
+  avatarWrap: {
+    width: 80,
+    height: 80,
+    borderRadius: radius.full,
+    overflow: 'hidden',
+  },
+  avatarImg: {
+    width: 80,
+    height: 80,
+    borderRadius: radius.full,
+  },
+  avatarBtn: {
+    flex: 1,
+    marginVertical: 0,
+  },
   label: {
     fontSize: 14,
     fontWeight: '600',

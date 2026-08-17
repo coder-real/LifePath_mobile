@@ -21,6 +21,7 @@ export default function ChatScreen({ conversationId }: { conversationId: string 
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [sendError, setSendError] = useState('');
   const listRef = useRef<FlatList<Message>>(null);
 
   const load = useCallback(async () => {
@@ -41,13 +42,16 @@ export default function ChatScreen({ conversationId }: { conversationId: string 
     const content = draft.trim();
     if (!content || sending || !user) return;
     setSending(true);
+    setSendError('');
     const { error } = await supabase.from('messages').insert({
       conversation_id: conversationId,
       sender_id: user.id,
       content,
     });
     setSending(false);
-    if (!error) {
+    if (error) {
+      setSendError('Could not send message: ' + error.message);
+    } else {
       setDraft('');
       load();
     }
@@ -79,16 +83,22 @@ export default function ChatScreen({ conversationId }: { conversationId: string 
           );
         }}
       />
-      <View style={styles.inputBar}>
-        <TextInput
-          value={draft}
-          onChangeText={setDraft}
-          placeholder="Type a message…"
-          placeholderTextColor={colors.textMuted}
-          style={styles.input}
-          multiline
-        />
-        <PressableButton label="Send" onPress={send} loading={sending} />
+      <View style={styles.inputBarWrap}>
+        {sendError ? <Text style={styles.sendError}>{sendError}</Text> : null}
+        <View style={styles.inputBar}>
+          <TextInput
+            value={draft}
+            onChangeText={(t) => {
+              setDraft(t);
+              if (sendError) setSendError('');
+            }}
+            placeholder="Type a message…"
+            placeholderTextColor={colors.textMuted}
+            style={styles.input}
+            multiline
+          />
+          <PressableButton label="Send" onPress={send} loading={sending} />
+        </View>
       </View>
     </KeyboardAvoidingView>
   );
@@ -153,13 +163,21 @@ const styles = StyleSheet.create({
   mineText: {
     color: '#fff',
   },
+  inputBarWrap: {
+    backgroundColor: colors.surface,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  sendError: {
+    color: colors.danger,
+    fontSize: 13,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.xs,
+  },
   inputBar: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     padding: spacing.sm,
-    backgroundColor: colors.surface,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
     gap: spacing.sm,
   },
   input: {
