@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Button, Card, Screen, Tag } from '@/components/ui';
+import Avatar from '@/components/Avatar';
 import { useAuth } from '@/context/AuthContext';
 import { colors, radius, spacing } from '@/lib/theme';
 import { supabase } from '@/lib/supabase';
@@ -76,9 +77,12 @@ export default function MentorDetailScreen() {
     <Screen>
       <ScrollView>
         <View style={styles.header}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{name.charAt(0).toUpperCase()}</Text>
-          </View>
+          <Avatar
+            name={name}
+            userId={mentor.profile?.id}
+            avatarFileName={mentor.profile?.avatar_url}
+            size={80}
+          />
           <Text style={styles.name}>{name}</Text>
           <Text style={styles.headline}>{mentor.headline ?? ''}</Text>
         </View>
@@ -142,20 +146,6 @@ const styles = StyleSheet.create({
   header: {
     alignItems: 'center',
     marginVertical: spacing.lg,
-  },
-  avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: radius.full,
-    backgroundColor: colors.primary + '22',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.sm,
-  },
-  avatarText: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: colors.primary,
   },
   name: {
     fontSize: 24,

@@ -2,6 +2,7 @@ import React from 'react';
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { EmptyState, Screen, SectionTitle } from '@/components/ui';
+import Avatar from '@/components/Avatar';
 import { useAuth } from '@/context/AuthContext';
 import { colors, radius, spacing } from '@/lib/theme';
 import { useConversations } from '@/hooks/useConversations';
@@ -25,9 +26,11 @@ export default function MenteesScreen() {
           return (
             <Pressable onPress={() => router.push(`/(mentor)/chat/${item.id}`)}>
               <View style={styles.row}>
-                <View style={styles.avatar}>
-                  <Text style={styles.avatarText}>{name.charAt(0).toUpperCase()}</Text>
-                </View>
+                <Avatar
+                  name={name}
+                  userId={item.other_participant?.id}
+                  avatarFileName={item.other_participant?.avatar_url}
+                />
                 <View style={{ flex: 1 }}>
                   <Text style={styles.name}>{name}</Text>
                   <Text style={styles.preview} numberOfLines={1}>
@@ -54,19 +57,6 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     padding: spacing.md,
     marginVertical: spacing.xs,
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: radius.full,
-    backgroundColor: colors.primary + '22',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarText: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: colors.primary,
   },
   name: {
     fontSize: 16,

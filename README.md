@@ -45,7 +45,8 @@ lifepath/
 
 2. **Run the schema.** In the Supabase dashboard open the **SQL editor**, paste the
    contents of `supabase/schema.sql`, and run it. This creates all tables, enables
-   Row Level Security, and adds a trigger that auto-creates a `profiles` row on signup.
+   Row Level Security, adds a trigger that auto-creates a `profiles` row on signup,
+   and creates the `avatars` storage bucket with its policies for profile photos.
 
    > Optional: enable Email confirmation off in **Auth → Providers → Email** so the
    > demo flow works instantly without confirming each account.

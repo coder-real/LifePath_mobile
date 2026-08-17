@@ -11,12 +11,21 @@ export default function MentorHomeScreen() {
   const router = useRouter();
   const [pending, setPending] = useState(0);
   const [mentees, setMentees] = useState<{ id: string; full_name: string | null }[]>([]);
+  const [profileReady, setProfileReady] = useState<boolean | null>(null);
 
   useFocusEffect(
     useCallback(() => {
       let active = true;
       (async () => {
         if (!profile) return;
+        // Check whether this mentor has set up their public mentor profile.
+        const { data: mp } = await supabase
+          .from('mentor_profiles')
+          .select('id')
+          .eq('id', profile.id)
+          .maybeSingle();
+        if (active) setProfileReady(!!mp);
+
         const { count } = await supabase
           .from('mentorship_requests')
           .select('*', { count: 'exact', head: true })
@@ -47,6 +56,17 @@ export default function MentorHomeScreen() {
   return (
     <Screen>
       <Text style={styles.greeting}>Welcome, {firstName} 👋</Text>
+
+      {profileReady === false ? (
+        <Card style={styles.onboarding}>
+          <Text style={styles.onboardingTitle}>Set up your mentor profile</Text>
+          <Text style={styles.onboardingText}>
+            You haven't created your public mentor profile yet, so you won't appear in mentor
+            search. Add your headline, expertise, and categories to get started.
+          </Text>
+          <Button title="Set Up Mentor Profile" onPress={() => router.push('/(mentor)/(tabs)/profile')} />
+        </Card>
+      ) : null}
 
       <Card style={styles.statCard}>
         <Text style={styles.statNumber}>{pending}</Text>
@@ -84,6 +104,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.lg,
     marginTop: spacing.md,
+  },
+  onboarding: {
+    backgroundColor: colors.primary + '0d',
+    borderColor: colors.primary + '33',
+    marginTop: spacing.md,
+  },
+  onboardingTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: spacing.xs,
+  },
+  onboardingText: {
+    fontSize: 14,
+    color: colors.textMuted,
+    marginBottom: spacing.sm,
+    lineHeight: 20,
   },
   statNumber: {
     fontSize: 40,

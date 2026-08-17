@@ -162,6 +162,42 @@ create policy "messages_insert" on public.messages for insert
   );
 
 -- ============================================================
+-- Avatar storage (Supabase Storage)
+-- Run this section in the SQL editor too. Creates an "avatars"
+-- bucket and allows users to upload/read their own avatar files.
+-- ============================================================
+insert into storage.buckets (id, name, public)
+values ('avatars', 'avatars', true)
+on conflict (id) do nothing;
+
+-- Read avatars (public bucket, any authenticated/anonymous can view the image)
+create policy "avatars_public_read"
+  on storage.objects for select
+  using (bucket_id = 'avatars');
+
+-- Upload: users can upload into an avatars/<uid>/ prefix (their own folder)
+create policy "avatars_upload_own"
+  on storage.objects for insert
+  with check (
+    bucket_id = 'avatars'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+-- Update/delete own avatar files
+create policy "avatars_update_own"
+  on storage.objects for update
+  using (
+    bucket_id = 'avatars'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+create policy "avatars_delete_own"
+  on storage.objects for delete
+  using (
+    bucket_id = 'avatars'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+-- ============================================================
 -- Trigger: create a profile row automatically when a user signs up.
 -- This is the recommended pattern and avoids race conditions with
 -- the client-side insert in signup.tsx (which is kept as a fallback).

@@ -1,6 +1,7 @@
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button, Screen, SectionTitle, Tag } from '@/components/ui';
+import Avatar from '@/components/Avatar';
 import { ProfileEditor } from '@/components/ProfileEditor';
 import { useAuth } from '@/context/AuthContext';
 import { colors, radius, spacing } from '@/lib/theme';
@@ -12,11 +13,12 @@ export default function MenteeProfileScreen() {
     <Screen>
       <ScrollView contentContainerStyle={{ paddingBottom: spacing.xl }}>
         <View style={styles.header}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
-              {(profile?.full_name ?? '?').charAt(0).toUpperCase()}
-            </Text>
-          </View>
+          <Avatar
+            name={profile?.full_name ?? '?'}
+            userId={profile?.id}
+            avatarFileName={profile?.avatar_url}
+            size={80}
+          />
           <Text style={styles.name}>{profile?.full_name}</Text>
           <Text style={styles.role}>Mentee</Text>
         </View>
@@ -48,20 +50,6 @@ const styles = StyleSheet.create({
   header: {
     alignItems: 'center',
     marginVertical: spacing.lg,
-  },
-  avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: radius.full,
-    backgroundColor: colors.primary + '22',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.sm,
-  },
-  avatarText: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: colors.primary,
   },
   name: {
     fontSize: 22,

@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { Image, StyleSheet, Text, TextInput, View } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { Button, Field } from '@/components/ui';
 import { colors, radius, spacing } from '@/lib/theme';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
+import { profileAvatarUrl, uploadAvatar } from '@/lib/avatar';
 
-// Shared profile editor. Role-specific fields (headline, expertise for mentors)
-// are rendered by the caller via `extraFields` and saved with `extraData`.
+// Shared profile editor (used by the mentee profile screen).
+// Includes avatar upload to Supabase Storage.
 export function ProfileEditor({
   onSaved,
 }: {
@@ -16,8 +18,27 @@ export function ProfileEditor({
   const [fullName, setFullName] = useState(profile?.full_name ?? '');
   const [bio, setBio] = useState(profile?.bio ?? '');
   const [interests, setInterests] = useState(profile?.interests?.join(', ') ?? '');
+  const [avatarUri, setAvatarUri] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState('');
+
+  async function pickAvatar() {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) {
+      setFeedback('We need media library permission to upload an avatar.');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+    if (!result.canceled && result.assets[0]) {
+      setAvatarUri(result.assets[0].uri);
+      setFeedback('');
+    }
+  }
 
   async function save() {
     if (!profile) return;
@@ -28,12 +49,26 @@ export function ProfileEditor({
       .map((s) => s.trim())
       .filter(Boolean);
 
+    // Upload avatar first if the user picked a new one.
+    let avatarFileName: string | null = profile.avatar_url;
+    if (avatarUri) {
+      try {
+        const mime = avatarUri.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
+        avatarFileName = await uploadAvatar(profile.id, { uri: avatarUri, mimeType: mime });
+      } catch (e) {
+        setSaving(false);
+        setFeedback('Avatar upload failed: ' + (e instanceof Error ? e.message : String(e)));
+        return;
+      }
+    }
+
     const { error } = await supabase
       .from('profiles')
       .update({
         full_name: fullName.trim(),
         bio: bio.trim() || null,
         interests: interestsList,
+        avatar_url: avatarFileName,
       })
       .eq('id', profile.id);
 
@@ -47,8 +82,25 @@ export function ProfileEditor({
     }
   }
 
+  const currentAvatarUri = avatarUri ?? profileAvatarUrl(profile?.id ?? '', profile?.avatar_url ?? null);
+
   return (
     <View>
+      <View style={styles.avatarRow}>
+        <View style={styles.avatarWrap}>
+          {currentAvatarUri ? (
+            <Image source={{ uri: currentAvatarUri }} style={styles.avatar} />
+          ) : (
+            <View style={styles.avatar}>
+              <Text style={styles.avatarInitial}>
+                {(fullName || '?').charAt(0).toUpperCase()}
+              </Text>
+            </View>
+          )}
+        </View>
+        <Button title={avatarUri ? 'Change photo' : 'Upload photo'} variant="secondary" onPress={pickAvatar} style={styles.avatarBtn} />
+      </View>
+
       <Field label="Full name" value={fullName} onChangeText={setFullName} placeholder="Your name" />
       <Field
         label="Bio"
@@ -74,5 +126,34 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     color: colors.success,
     fontSize: 14,
+  },
+  avatarRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    marginBottom: spacing.sm,
+  },
+  avatarWrap: {
+    width: 80,
+    height: 80,
+    borderRadius: radius.full,
+    overflow: 'hidden',
+  },
+  avatar: {
+    width: 80,
+    height: 80,
+    borderRadius: radius.full,
+    backgroundColor: colors.primary + '22',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarInitial: {
+    fontSize: 30,
+    fontWeight: '700',
+    color: colors.primary,
+  },
+  avatarBtn: {
+    flex: 1,
+    marginVertical: 0,
   },
 });

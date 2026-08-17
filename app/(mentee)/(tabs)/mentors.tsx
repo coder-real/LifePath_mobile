@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Card, EmptyState, Screen, SectionTitle, Tag } from '@/components/ui';
+import Avatar from '@/components/Avatar';
 import { colors, radius, spacing } from '@/lib/theme';
 import { supabase } from '@/lib/supabase';
 import { CATEGORIES, MentorProfile } from '@/types';
@@ -75,9 +76,11 @@ export default function MentorListScreen() {
             <Pressable onPress={() => router.push(`/(mentee)/mentor/${item.id}`)}>
               <Card style={styles.card}>
                 <View style={styles.cardHeader}>
-                  <View style={styles.avatar}>
-                    <Text style={styles.avatarText}>{name.charAt(0).toUpperCase()}</Text>
-                  </View>
+                  <Avatar
+                    name={name}
+                    userId={item.profile?.id}
+                    avatarFileName={item.profile?.avatar_url}
+                  />
                   <View style={{ flex: 1 }}>
                     <Text style={styles.name}>{name}</Text>
                     <Text style={styles.headline}>{item.headline ?? 'Mentor'}</Text>
@@ -160,19 +163,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: radius.full,
-    backgroundColor: colors.primary + '22',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarText: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: colors.primary,
   },
   name: {
     fontSize: 17,

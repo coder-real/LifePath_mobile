@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { Button, Card, EmptyState, Screen } from '@/components/ui';
 import { colors, radius, spacing } from '@/lib/theme';
@@ -10,6 +10,8 @@ export default function GoalDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [goal, setGoal] = useState<Goal | null>(null);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [newMilestone, setNewMilestone] = useState('');
+  const [adding, setAdding] = useState(false);
 
   async function load() {
     if (!id) return;
@@ -38,6 +40,22 @@ export default function GoalDetailScreen() {
       .eq('id', milestone.id);
     setUpdating(null);
     if (!error) load();
+  }
+
+  async function addMilestone() {
+    const title = newMilestone.trim();
+    if (!title || !goal || adding) return;
+    setAdding(true);
+    const { error } = await supabase.from('goal_milestones').insert({
+      goal_id: goal.id,
+      title,
+      is_completed: false,
+    });
+    setAdding(false);
+    if (!error) {
+      setNewMilestone('');
+      load();
+    }
   }
 
   if (!goal) {
@@ -71,7 +89,7 @@ export default function GoalDetailScreen() {
 
         <Text style={styles.sectionTitle}>Milestones</Text>
         {milestones.length === 0 ? (
-          <EmptyState message="This goal has no milestones. Check them off as you go (add them from the edit form)." />
+          <EmptyState message="This goal has no milestones yet. Add one below." />
         ) : (
           milestones.map((m) => (
             <View key={m.id} style={styles.milestone}>
@@ -85,6 +103,20 @@ export default function GoalDetailScreen() {
             </View>
           ))
         )}
+
+        <View style={styles.addRow}>
+          <TextInput
+            value={newMilestone}
+            onChangeText={setNewMilestone}
+            placeholder="Add a milestone…"
+            placeholderTextColor={colors.textMuted}
+            style={styles.addInput}
+            onSubmitEditing={addMilestone}
+          />
+          <View onTouchEnd={addMilestone} style={styles.addBtn}>
+            <Text style={styles.addBtnText}>{adding ? '…' : 'Add'}</Text>
+          </View>
+        </View>
 
         <Button title="Refresh" variant="secondary" onPress={load} style={{ marginTop: spacing.md }} />
       </ScrollView>
@@ -169,6 +201,33 @@ const styles = StyleSheet.create({
   },
   updating: {
     color: colors.textMuted,
+  },
+  addRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    alignItems: 'center',
+    marginTop: spacing.sm,
+  },
+  addInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 10,
+    fontSize: 15,
+    backgroundColor: colors.surface,
+    color: colors.text,
+  },
+  addBtn: {
+    backgroundColor: colors.primary,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: 12,
+  },
+  addBtnText: {
+    color: '#fff',
+    fontWeight: '700',
   },
   muted: {
     color: colors.textMuted,
