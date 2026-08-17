@@ -8,8 +8,10 @@ import {
   TextInputProps,
   View,
   ViewStyle,
+  TextStyle,
 } from 'react-native';
-import { colors, radius, spacing } from '@/lib/theme';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, fonts, radius, spacing } from '@/lib/theme';
 
 // ---- Button ----
 export function Button({
@@ -18,14 +20,20 @@ export function Button({
   variant = 'primary',
   loading = false,
   disabled = false,
+  icon,
+  iconPosition = 'left',
   style,
+  textStyle,
 }: {
   title: string;
   onPress: () => void;
   variant?: 'primary' | 'secondary' | 'danger' | 'ghost';
   loading?: boolean;
   disabled?: boolean;
+  icon?: keyof typeof Ionicons.glyphMap;
+  iconPosition?: 'left' | 'right';
   style?: ViewStyle;
+  textStyle?: TextStyle;
 }) {
   const background =
     variant === 'primary'
@@ -49,7 +57,11 @@ export function Button({
       disabled={disabled || loading}
       style={({ pressed }) => [
         styles.button,
-        { backgroundColor: background, borderColor: variant === 'secondary' ? colors.primary : 'transparent', borderWidth: variant === 'secondary' ? 1 : 0 },
+        {
+          backgroundColor: background,
+          borderColor: variant === 'secondary' ? colors.primaryLight : 'transparent',
+          borderWidth: variant === 'secondary' ? 1.5 : 0,
+        },
         variant === 'ghost' && styles.ghost,
         pressed && styles.pressed,
         disabled && styles.disabled,
@@ -57,9 +69,17 @@ export function Button({
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={textColor} />
+        <ActivityIndicator color={textColor} size="small" />
       ) : (
-        <Text style={[styles.buttonText, { color: textColor }]}>{title}</Text>
+        <View style={styles.buttonContent}>
+          {icon && iconPosition === 'left' ? (
+            <Ionicons name={icon} size={18} color={textColor} style={{ marginRight: 6 }} />
+          ) : null}
+          <Text style={[styles.buttonText, { color: textColor }, textStyle]}>{title}</Text>
+          {icon && iconPosition === 'right' ? (
+            <Ionicons name={icon} size={18} color={textColor} style={{ marginLeft: 6 }} />
+          ) : null}
+        </View>
       )}
     </Pressable>
   );
@@ -68,16 +88,27 @@ export function Button({
 // ---- Text input field ----
 export function Field({
   label,
+  icon,
+  style,
   ...props
-}: TextInputProps & { label: string }) {
+}: TextInputProps & {
+  label: string;
+  icon?: keyof typeof Ionicons.glyphMap;
+  style?: TextStyle;
+}) {
   return (
     <View style={styles.fieldGroup}>
       <Text style={styles.label}>{label}</Text>
-      <TextInput
-        placeholderTextColor={colors.textMuted}
-        style={styles.input}
-        {...props}
-      />
+      <View style={styles.inputContainer}>
+        {icon ? (
+          <Ionicons name={icon} size={20} color={colors.textMuted} style={styles.inputIcon} />
+        ) : null}
+        <TextInput
+          placeholderTextColor={colors.textMuted}
+          style={[styles.input, icon ? { paddingLeft: 40 } : null, style]}
+          {...props}
+        />
+      </View>
     </View>
   );
 }
@@ -94,23 +125,52 @@ export function Card({
 }
 
 // ---- Section title ----
-export function SectionTitle({ children }: { children: React.ReactNode }) {
-  return <Text style={styles.sectionTitle}>{children}</Text>;
+export function SectionTitle({
+  children,
+  action,
+}: {
+  children: React.ReactNode;
+  action?: React.ReactNode;
+}) {
+  return (
+    <View style={styles.sectionHeader}>
+      <Text style={styles.sectionTitle}>{children}</Text>
+      {action}
+    </View>
+  );
 }
 
 // ---- Empty state ----
-export function EmptyState({ message }: { message: string }) {
+export function EmptyState({
+  message,
+  icon = 'file-tray-outline',
+}: {
+  message: string;
+  icon?: keyof typeof Ionicons.glyphMap;
+}) {
   return (
     <View style={styles.empty}>
+      <View style={styles.emptyIconWrap}>
+        <Ionicons name={icon} size={28} color={colors.primary} />
+      </View>
       <Text style={styles.emptyText}>{message}</Text>
     </View>
   );
 }
 
 // ---- Tag / chip ----
-export function Tag({ label }: { label: string }) {
+export function Tag({
+  label,
+  icon,
+}: {
+  label: string;
+  icon?: keyof typeof Ionicons.glyphMap;
+}) {
   return (
     <View style={styles.tag}>
+      {icon ? (
+        <Ionicons name={icon} size={12} color={colors.primary} style={{ marginRight: 4 }} />
+      ) : null}
       <Text style={styles.tagText}>{label}</Text>
     </View>
   );
@@ -121,11 +181,13 @@ export function SelectableChip({
   label,
   active,
   onPress,
+  icon,
   style,
 }: {
   label: string;
   active: boolean;
   onPress: () => void;
+  icon?: keyof typeof Ionicons.glyphMap;
   style?: ViewStyle;
 }) {
   return (
@@ -138,9 +200,19 @@ export function SelectableChip({
         style,
       ]}
     >
-      <Text style={[styles.selectableChipText, active && styles.selectableChipTextActive]}>
-        {label}
-      </Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        {icon ? (
+          <Ionicons
+            name={icon}
+            size={14}
+            color={active ? '#fff' : colors.textMuted}
+            style={{ marginRight: 4 }}
+          />
+        ) : null}
+        <Text style={[styles.selectableChipText, active && styles.selectableChipTextActive]}>
+          {label}
+        </Text>
+      </View>
     </Pressable>
   );
 }
@@ -158,14 +230,20 @@ const styles = StyleSheet.create({
   },
   button: {
     paddingVertical: 14,
+    paddingHorizontal: spacing.lg,
     borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
     marginVertical: spacing.xs,
   },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   buttonText: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 15,
+    fontFamily: fonts.semiBold,
   },
   ghost: {
     backgroundColor: 'transparent',
@@ -181,17 +259,27 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: fonts.semiBold,
     color: colors.text,
     marginBottom: spacing.xs,
   },
+  inputContainer: {
+    position: 'relative',
+    justifyContent: 'center',
+  },
+  inputIcon: {
+    position: 'absolute',
+    left: spacing.md,
+    zIndex: 1,
+  },
   input: {
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.border,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
     paddingVertical: 12,
-    fontSize: 16,
+    fontSize: 15,
+    fontFamily: fonts.regular,
     backgroundColor: colors.surface,
     color: colors.text,
   },
@@ -202,41 +290,64 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     padding: spacing.md,
     marginVertical: spacing.xs,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    elevation: 1,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginVertical: spacing.sm,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 18,
+    fontFamily: fonts.bold,
     color: colors.text,
-    marginVertical: spacing.sm,
   },
   empty: {
     alignItems: 'center',
     paddingVertical: spacing.xl,
   },
+  emptyIconWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.sm,
+  },
   emptyText: {
     color: colors.textMuted,
-    fontSize: 15,
+    fontSize: 14,
+    fontFamily: fonts.medium,
     textAlign: 'center',
+    paddingHorizontal: spacing.md,
   },
   tag: {
-    backgroundColor: colors.primary + '14',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primaryLight,
     borderRadius: radius.full,
-    paddingHorizontal: spacing.sm,
+    paddingHorizontal: spacing.sm + 2,
     paddingVertical: spacing.xs,
     marginRight: spacing.xs,
     marginBottom: spacing.xs,
   },
   tagText: {
-    color: colors.primary,
+    color: colors.primaryDark,
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: fonts.semiBold,
   },
   selectableChip: {
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radius.full,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 6,
+    paddingHorizontal: spacing.sm + 4,
+    paddingVertical: 7,
     backgroundColor: colors.surface,
     marginRight: spacing.xs,
     marginBottom: spacing.xs,
@@ -246,11 +357,13 @@ const styles = StyleSheet.create({
     borderColor: colors.primary,
   },
   selectableChipText: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 13,
+    fontFamily: fonts.medium,
     color: colors.textMuted,
   },
   selectableChipTextActive: {
     color: '#fff',
+    fontFamily: fonts.semiBold,
   },
 });
+

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Button, Field, Screen } from '@/components/ui';
-import { colors, radius, spacing } from '@/lib/theme';
+import { colors, fonts, radius, spacing } from '@/lib/theme';
 import { supabase } from '@/lib/supabase';
 import { Role } from '@/types';
 
@@ -42,8 +42,6 @@ export default function SignUpScreen() {
     }
 
     // Create the profile row (id mirrors auth.users.id).
-    // Use an upsert so it's safe even though a DB trigger also auto-creates
-    // the row on signup — whichever runs first, this never errors.
     if (data.user) {
       const { error: profileErr } = await supabase.from('profiles').upsert({
         id: data.user.id,
@@ -53,16 +51,12 @@ export default function SignUpScreen() {
         interests: [],
       });
       if (profileErr) {
-        // Non-fatal: profile may already exist if a user signs up with email
-        // confirmation flow. Log it but continue.
         console.warn('Profile upsert error:', profileErr.message);
       }
     }
 
     setLoading(false);
 
-    // With email confirmation disabled, the session is live and the router
-    // will redirect. With it enabled, tell the user to confirm.
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) {
       setError('Check your email to confirm your account, then log in.');
@@ -80,9 +74,16 @@ export default function SignUpScreen() {
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
-        <Field label="Full name" value={fullName} onChangeText={setFullName} placeholder="Ada Lovelace" />
+        <Field
+          label="Full name"
+          icon="person-outline"
+          value={fullName}
+          onChangeText={setFullName}
+          placeholder="Ada Lovelace"
+        />
         <Field
           label="Email"
+          icon="mail-outline"
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"
@@ -91,6 +92,7 @@ export default function SignUpScreen() {
         />
         <Field
           label="Password"
+          icon="lock-closed-outline"
           value={password}
           onChangeText={setPassword}
           secureTextEntry
@@ -99,12 +101,33 @@ export default function SignUpScreen() {
 
         <Text style={styles.roleLabel}>I am signing up as a…</Text>
         <View style={styles.roleRow}>
-          <RoleChip active={role === 'mentee'} label="Mentee" onPress={() => setRole('mentee')} />
-          <RoleChip active={role === 'mentor'} label="Mentor" onPress={() => setRole('mentor')} />
+          <RoleChip
+            active={role === 'mentee'}
+            label="Mentee"
+            icon="school-outline"
+            onPress={() => setRole('mentee')}
+          />
+          <RoleChip
+            active={role === 'mentor'}
+            label="Mentor"
+            icon="ribbon-outline"
+            onPress={() => setRole('mentor')}
+          />
         </View>
 
-        <Button title="Create Account" onPress={handleSignUp} loading={loading} style={{ marginTop: spacing.lg }} />
-        <Button title="Back" variant="ghost" onPress={() => router.back()} />
+        <Button
+          title="Create Account"
+          icon="checkmark-outline"
+          onPress={handleSignUp}
+          loading={loading}
+          style={{ marginTop: spacing.lg }}
+        />
+        <Button
+          title="Back"
+          icon="arrow-back-outline"
+          variant="ghost"
+          onPress={() => router.back()}
+        />
       </Screen>
     </KeyboardAvoidingView>
   );
@@ -113,15 +136,18 @@ export default function SignUpScreen() {
 function RoleChip({
   active,
   label,
+  icon,
   onPress,
 }: {
   active: boolean;
   label: string;
+  icon?: 'school-outline' | 'ribbon-outline';
   onPress: () => void;
 }) {
   return (
     <Button
       title={label}
+      icon={icon}
       variant={active ? 'primary' : 'secondary'}
       onPress={onPress}
       style={styles.roleChip}
@@ -132,22 +158,26 @@ function RoleChip({
 const styles = StyleSheet.create({
   title: {
     fontSize: 28,
-    fontWeight: '800',
+    fontFamily: fonts.extraBold,
     color: colors.text,
     marginTop: spacing.xl,
+    letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 15,
+    fontFamily: fonts.medium,
     color: colors.textMuted,
     marginBottom: spacing.lg,
   },
   error: {
     color: colors.danger,
+    fontFamily: fonts.medium,
+    fontSize: 14,
     marginBottom: spacing.sm,
   },
   roleLabel: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: fonts.semiBold,
     color: colors.text,
     marginTop: spacing.md,
   },
@@ -161,3 +191,4 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
   },
 });
+

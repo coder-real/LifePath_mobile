@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Button, Field, Screen } from '@/components/ui';
-import { colors, spacing } from '@/lib/theme';
+import { colors, fonts, spacing } from '@/lib/theme';
 import { supabase } from '@/lib/supabase';
 
 export default function LoginScreen() {
@@ -40,6 +40,7 @@ export default function LoginScreen() {
 
         <Field
           label="Email"
+          icon="mail-outline"
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"
@@ -48,14 +49,26 @@ export default function LoginScreen() {
         />
         <Field
           label="Password"
+          icon="lock-closed-outline"
           value={password}
           onChangeText={setPassword}
           secureTextEntry
           placeholder="Your password"
         />
 
-        <Button title="Log In" onPress={handleLogin} loading={loading} style={{ marginTop: spacing.lg }} />
-        <Button title="Back" variant="ghost" onPress={() => router.back()} />
+        <Button
+          title="Log In"
+          icon="log-in-outline"
+          onPress={handleLogin}
+          loading={loading}
+          style={{ marginTop: spacing.lg }}
+        />
+        <Button
+          title="Back"
+          icon="arrow-back-outline"
+          variant="ghost"
+          onPress={() => router.back()}
+        />
       </Screen>
     </KeyboardAvoidingView>
   );
@@ -64,17 +77,22 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   title: {
     fontSize: 28,
-    fontWeight: '800',
+    fontFamily: fonts.extraBold,
     color: colors.text,
     marginTop: spacing.xl,
+    letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 15,
+    fontFamily: fonts.medium,
     color: colors.textMuted,
     marginBottom: spacing.lg,
   },
   error: {
     color: colors.danger,
+    fontFamily: fonts.medium,
+    fontSize: 14,
     marginBottom: spacing.sm,
   },
 });
+

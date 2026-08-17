@@ -3,7 +3,7 @@ import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'rea
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Button, EmptyState, Screen, SectionTitle } from '@/components/ui';
 import { useAuth } from '@/context/AuthContext';
-import { colors, radius, spacing } from '@/lib/theme';
+import { colors, fonts, radius, spacing } from '@/lib/theme';
 import { supabase } from '@/lib/supabase';
 import { Goal } from '@/types';
 
@@ -87,19 +87,19 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   title: {
-    fontSize: 17,
-    fontWeight: '700',
+    fontSize: 16,
+    fontFamily: fonts.bold,
     color: colors.text,
     flex: 1,
   },
   status: {
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: fonts.semiBold,
     color: colors.textMuted,
     textTransform: 'capitalize',
   },
   progressTrack: {
-    height: 8,
+    height: 6,
     borderRadius: radius.full,
     backgroundColor: colors.border,
     overflow: 'hidden',
@@ -111,7 +111,8 @@ const styles = StyleSheet.create({
   },
   progressText: {
     marginTop: spacing.xs,
-    fontSize: 13,
+    fontSize: 12,
+    fontFamily: fonts.medium,
     color: colors.textMuted,
   },
 });

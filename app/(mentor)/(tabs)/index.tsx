@@ -1,9 +1,10 @@
 import React, { useCallback, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { Button, Card, Screen, SectionTitle } from '@/components/ui';
 import { useAuth } from '@/context/AuthContext';
-import { colors, radius, spacing } from '@/lib/theme';
+import { colors, fonts, radius, spacing } from '@/lib/theme';
 import { supabase } from '@/lib/supabase';
 
 export default function MentorHomeScreen() {
@@ -18,7 +19,6 @@ export default function MentorHomeScreen() {
       let active = true;
       (async () => {
         if (!profile) return;
-        // Check whether this mentor has set up their public mentor profile.
         const { data: mp } = await supabase
           .from('mentor_profiles')
           .select('id')
@@ -55,90 +55,180 @@ export default function MentorHomeScreen() {
 
   return (
     <Screen>
-      <Text style={styles.greeting}>Welcome, {firstName} 👋</Text>
+      <View style={styles.header}>
+        <Text style={styles.greeting}>Welcome, {firstName} 👋</Text>
+      </View>
 
       {profileReady === false ? (
         <Card style={styles.onboarding}>
+          <View style={styles.onboardingIconRow}>
+            <Ionicons name="person-circle-outline" size={32} color={colors.primary} />
+          </View>
           <Text style={styles.onboardingTitle}>Set up your mentor profile</Text>
           <Text style={styles.onboardingText}>
             You haven't created your public mentor profile yet, so you won't appear in mentor
             search. Add your headline, expertise, and categories to get started.
           </Text>
-          <Button title="Set Up Mentor Profile" onPress={() => router.push('/(mentor)/(tabs)/profile')} />
+          <Button
+            title="Set Up Mentor Profile"
+            icon="arrow-forward-outline"
+            iconPosition="right"
+            onPress={() => router.push('/(mentor)/(tabs)/profile')}
+          />
         </Card>
       ) : null}
 
       <Card style={styles.statCard}>
+        <View style={styles.statIconWrap}>
+          <Ionicons name="notifications" size={24} color={colors.primary} />
+        </View>
         <Text style={styles.statNumber}>{pending}</Text>
         <Text style={styles.statLabel}>Pending requests</Text>
+        {pending > 0 ? (
+          <Button
+            title="Review"
+            icon="chevron-forward"
+            iconPosition="right"
+            variant="secondary"
+            onPress={() => router.push('/(mentor)/(tabs)/requests')}
+            style={{ marginTop: spacing.sm }}
+          />
+        ) : null}
       </Card>
 
       <SectionTitle>Active mentees</SectionTitle>
       {mentees.length === 0 ? (
-        <Card>
-          <Text style={styles.muted}>No active mentees yet.</Text>
+        <Card style={styles.emptyCard}>
+          <Ionicons name="people-outline" size={28} color={colors.primary} />
+          <Text style={styles.emptyText}>No active mentees yet.</Text>
         </Card>
       ) : (
         mentees.map((m) => (
-          <Card key={m.id}>
-            <Text style={styles.menteeName}>{m.full_name}</Text>
+          <Card key={m.id} style={styles.menteeCard}>
+            <View style={styles.menteeRow}>
+              <View style={styles.menteeAvatar}>
+                <Text style={styles.menteeInitial}>
+                  {(m.full_name || '?').charAt(0).toUpperCase()}
+                </Text>
+              </View>
+              <Text style={styles.menteeName}>{m.full_name}</Text>
+              <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+            </View>
           </Card>
         ))
       )}
 
       <SectionTitle>Actions</SectionTitle>
-      <Button title="View Requests" onPress={() => router.push('/(mentor)/(tabs)/requests')} />
-      <Button title="Open Mentees" variant="secondary" onPress={() => router.push('/(mentor)/(tabs)/mentees')} />
+      <Button
+        title="View Requests"
+        icon="notifications-outline"
+        onPress={() => router.push('/(mentor)/(tabs)/requests')}
+      />
+      <Button
+        title="Open Mentees"
+        icon="people-outline"
+        variant="secondary"
+        onPress={() => router.push('/(mentor)/(tabs)/mentees')}
+      />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
+  header: {
+    marginTop: spacing.sm,
+    marginBottom: spacing.xs,
+  },
   greeting: {
     fontSize: 26,
-    fontWeight: '800',
+    fontFamily: fonts.extraBold,
     color: colors.text,
-    marginTop: spacing.sm,
+    letterSpacing: -0.5,
   },
   statCard: {
     alignItems: 'center',
     paddingVertical: spacing.lg,
     marginTop: spacing.md,
   },
+  statIconWrap: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.xs,
+  },
   onboarding: {
-    backgroundColor: colors.primary + '0d',
+    backgroundColor: colors.primaryLight,
     borderColor: colors.primary + '33',
     marginTop: spacing.md,
   },
+  onboardingIconRow: {
+    marginBottom: spacing.xs,
+  },
   onboardingTitle: {
-    fontSize: 17,
-    fontWeight: '700',
+    fontSize: 16,
+    fontFamily: fonts.bold,
     color: colors.text,
     marginBottom: spacing.xs,
   },
   onboardingText: {
     fontSize: 14,
+    fontFamily: fonts.regular,
     color: colors.textMuted,
     marginBottom: spacing.sm,
     lineHeight: 20,
   },
   statNumber: {
     fontSize: 40,
-    fontWeight: '800',
+    fontFamily: fonts.extraBold,
     color: colors.primary,
+    letterSpacing: -1,
   },
   statLabel: {
-    fontSize: 15,
+    fontSize: 14,
+    fontFamily: fonts.medium,
     color: colors.textMuted,
     marginTop: 4,
   },
+  emptyCard: {
+    alignItems: 'center',
+    paddingVertical: spacing.md,
+    gap: spacing.xs,
+  },
+  emptyText: {
+    color: colors.textMuted,
+    fontSize: 14,
+    fontFamily: fonts.medium,
+  },
+  menteeCard: {
+    paddingVertical: spacing.sm,
+  },
+  menteeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  menteeAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  menteeInitial: {
+    fontSize: 15,
+    fontFamily: fonts.bold,
+    color: colors.primary,
+  },
   menteeName: {
-    fontSize: 16,
-    fontWeight: '600',
+    flex: 1,
+    fontSize: 15,
+    fontFamily: fonts.semiBold,
     color: colors.text,
   },
-  muted: {
-    color: colors.textMuted,
-    fontSize: 15,
-  },
 });
+
+

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
-import { colors, radius } from '@/lib/theme';
+import { colors, fonts, radius } from '@/lib/theme';
 import { profileAvatarUrl } from '@/lib/avatar';
 
 // Circular avatar. Shows the user's uploaded image when available,
@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   initial: {
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     color: colors.primary,
   },
 });

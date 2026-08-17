@@ -1,9 +1,10 @@
 import React, { useCallback, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { Button, Card, Screen, SectionTitle } from '@/components/ui';
 import { useAuth } from '@/context/AuthContext';
-import { colors, spacing } from '@/lib/theme';
+import { colors, fonts, radius, spacing } from '@/lib/theme';
 import { supabase } from '@/lib/supabase';
 import { Goal } from '@/types';
 
@@ -36,58 +37,147 @@ export default function MenteeHomeScreen() {
 
   return (
     <Screen>
-      <Text style={styles.greeting}>Hi {firstName} 👋</Text>
-      <Text style={styles.subtitle}>Here's where you are on your path.</Text>
+      <View style={styles.header}>
+        <Text style={styles.greeting}>Hi {firstName} 👋</Text>
+        <Text style={styles.subtitle}>Here's where you are on your path.</Text>
+      </View>
 
-      <SectionTitle>Active goals</SectionTitle>
+      <SectionTitle
+        action={
+          goals.length > 0 ? (
+            <Pressable onPress={() => router.push('/(mentee)/(tabs)/goals')}>
+              <Text style={styles.seeAll}>See all</Text>
+            </Pressable>
+          ) : undefined
+        }
+      >
+        Active goals
+      </SectionTitle>
+
       {goals.length === 0 ? (
-        <Card>
-          <Text style={styles.emptyText}>No active goals yet.</Text>
-          <Button title="Create a goal" onPress={() => router.push('/(mentee)/new-goal')} style={{ marginTop: spacing.sm }} />
+        <Card style={styles.emptyCard}>
+          <View style={styles.emptyIconWrap}>
+            <Ionicons name="flag-outline" size={24} color={colors.primary} />
+          </View>
+          <Text style={styles.emptyTitle}>No active goals yet</Text>
+          <Text style={styles.emptyText}>Create your first goal to begin tracking your milestones.</Text>
+          <Button
+            title="Create a goal"
+            icon="add-outline"
+            onPress={() => router.push('/(mentee)/new-goal')}
+            style={{ marginTop: spacing.md }}
+          />
         </Card>
       ) : (
         goals.map((g) => (
-          <Card key={g.id} style={styles.goalCard}>
-            <Text style={styles.goalTitle}>{g.title}</Text>
-            <Text style={styles.goalCategory}>{g.category ?? 'General'}</Text>
-          </Card>
+          <Pressable key={g.id} onPress={() => router.push(`/(mentee)/goal/${g.id}`)}>
+            <Card style={styles.goalCard}>
+              <View style={styles.goalRow}>
+                <View style={styles.goalIconWrap}>
+                  <Ionicons name="flag" size={18} color={colors.primary} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.goalTitle}>{g.title}</Text>
+                  <Text style={styles.goalCategory}>{g.category ?? 'General'}</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+              </View>
+            </Card>
+          </Pressable>
         ))
       )}
 
       <SectionTitle>Take a step</SectionTitle>
-      <Button title="Find a Mentor" onPress={() => router.push('/(mentee)/(tabs)/mentors')} />
-      <Button title="View all goals" variant="secondary" onPress={() => router.push('/(mentee)/(tabs)/goals')} />
+      <Button
+        title="Find a Mentor"
+        icon="compass-outline"
+        onPress={() => router.push('/(mentee)/(tabs)/mentors')}
+      />
+      <Button
+        title="View all goals"
+        icon="list-outline"
+        variant="secondary"
+        onPress={() => router.push('/(mentee)/(tabs)/goals')}
+      />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
+  header: {
+    marginTop: spacing.sm,
+    marginBottom: spacing.xs,
+  },
   greeting: {
     fontSize: 26,
-    fontWeight: '800',
+    fontFamily: fonts.extraBold,
     color: colors.text,
-    marginTop: spacing.sm,
+    letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 15,
+    fontFamily: fonts.medium,
     color: colors.textMuted,
-    marginBottom: spacing.sm,
+    marginTop: 2,
   },
-  goalCard: {
-    paddingVertical: spacing.md,
+  seeAll: {
+    fontSize: 14,
+    fontFamily: fonts.semiBold,
+    color: colors.primary,
   },
-  goalTitle: {
+  emptyCard: {
+    alignItems: 'center',
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.md,
+  },
+  emptyIconWrap: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.xs,
+  },
+  emptyTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     color: colors.text,
-  },
-  goalCategory: {
-    fontSize: 13,
-    color: colors.textMuted,
     marginTop: spacing.xs,
   },
   emptyText: {
     color: colors.textMuted,
+    fontSize: 13,
+    fontFamily: fonts.regular,
+    textAlign: 'center',
+    marginTop: 2,
+  },
+  goalCard: {
+    paddingVertical: spacing.md,
+  },
+  goalRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  goalIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: radius.md,
+    backgroundColor: colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  goalTitle: {
     fontSize: 15,
+    fontFamily: fonts.bold,
+    color: colors.text,
+  },
+  goalCategory: {
+    fontSize: 12,
+    fontFamily: fonts.medium,
+    color: colors.textMuted,
+    marginTop: 2,
   },
 });
+

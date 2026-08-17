@@ -10,8 +10,9 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/context/AuthContext';
-import { colors, radius, spacing } from '@/lib/theme';
+import { colors, fonts, radius, spacing } from '@/lib/theme';
 import { supabase } from '@/lib/supabase';
 import { Message } from '@/types';
 
@@ -115,8 +116,12 @@ function PressableButton({
   loading: boolean;
 }) {
   return (
-    <Pressable onPress={onPress} style={styles.sendButton}>
-      <Text style={styles.sendText}>{loading ? '…' : label}</Text>
+    <Pressable onPress={onPress} style={styles.sendButton} disabled={loading}>
+      {loading ? (
+        <Ionicons name="hourglass-outline" size={20} color="#fff" />
+      ) : (
+        <Ionicons name="send" size={18} color="#fff" />
+      )}
     </Pressable>
   );
 }
@@ -129,10 +134,12 @@ const styles = StyleSheet.create({
   empty: {
     textAlign: 'center',
     color: colors.textMuted,
+    fontFamily: fonts.medium,
+    fontSize: 14,
     marginTop: spacing.xl,
   },
   bubbleRow: {
-    marginVertical: spacing.xs,
+    marginVertical: 3,
     flexDirection: 'row',
   },
   mineRow: {
@@ -149,17 +156,19 @@ const styles = StyleSheet.create({
   },
   mineBubble: {
     backgroundColor: colors.primary,
-    borderBottomRightRadius: radius.sm,
+    borderBottomRightRadius: 4,
   },
   theirBubble: {
     backgroundColor: colors.surface,
-    borderBottomLeftRadius: radius.sm,
+    borderBottomLeftRadius: 4,
     borderWidth: 1,
     borderColor: colors.border,
   },
   bubbleText: {
     fontSize: 15,
+    fontFamily: fonts.regular,
     color: colors.text,
+    lineHeight: 21,
   },
   mineText: {
     color: '#fff',
@@ -171,6 +180,7 @@ const styles = StyleSheet.create({
   },
   sendError: {
     color: colors.danger,
+    fontFamily: fonts.medium,
     fontSize: 13,
     paddingHorizontal: spacing.md,
     paddingTop: spacing.xs,
@@ -183,24 +193,22 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.border,
     borderRadius: radius.lg,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     maxHeight: 120,
     fontSize: 15,
+    fontFamily: fonts.regular,
     color: colors.text,
   },
   sendButton: {
     backgroundColor: colors.primary,
-    borderRadius: radius.lg,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
+    borderRadius: radius.full,
+    width: 42,
+    height: 42,
     alignItems: 'center',
-  },
-  sendText: {
-    color: '#fff',
-    fontWeight: '700',
+    justifyContent: 'center',
   },
 });

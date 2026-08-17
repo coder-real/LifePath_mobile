@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { EmptyState, Screen, SectionTitle } from '@/components/ui';
 import Avatar from '@/components/Avatar';
 import { useAuth } from '@/context/AuthContext';
-import { colors, radius, spacing } from '@/lib/theme';
+import { colors, fonts, radius, spacing } from '@/lib/theme';
 import { useConversations } from '@/hooks/useConversations';
 
 export default function MenteesScreen() {
@@ -59,12 +59,13 @@ const styles = StyleSheet.create({
     marginVertical: spacing.xs,
   },
   name: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 15,
+    fontFamily: fonts.bold,
     color: colors.text,
   },
   preview: {
-    fontSize: 14,
+    fontSize: 13,
+    fontFamily: fonts.regular,
     color: colors.textMuted,
     marginTop: 2,
   },
